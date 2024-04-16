@@ -1,0 +1,9 @@
+.idea/
+bin/
+build/
+coverage.txt
+.vscode/
+vendor/
+**/.DS_Store
+.env
+.envrc
