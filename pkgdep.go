@@ -1,12 +1,16 @@
 package pkgdep
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"golang.org/x/tools/go/analysis"
 )
@@ -31,6 +35,7 @@ func init() {
 type Config struct {
 	TargetPackagePrefixList []string
 	IsExcludeTests          bool
+	EnableRegexp            bool
 	Dependencies            map[string][]string
 }
 
@@ -59,7 +64,67 @@ func (c *Config) isAllowedDependency(from, to string) bool {
 			return true
 		}
 	}
+
+	if c.EnableRegexp {
+		return c.isAllowedDependencyRegexp(from, to)
+	}
+
 	return false
+}
+
+func (c *Config) isAllowedDependencyRegexp(from, to string) bool {
+	for fromPattern, toTemplateStrings := range c.Dependencies {
+		data, err := matchAndExtract(fromPattern, from)
+		if err != nil {
+			continue
+		}
+		for _, toTemplateString := range toTemplateStrings {
+			toPattern, err := buildPattern(toTemplateString, data)
+			if err != nil {
+				continue
+			}
+			re, err := regexp.Compile(toPattern)
+			if err != nil {
+				continue
+			}
+			if re.MatchString(to) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func matchAndExtract(pattern, text string) (map[string]string, error) {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	match := re.FindStringSubmatch(text)
+	if match == nil {
+		return nil, errors.New("no match")
+	}
+	names := re.SubexpNames()
+	data := make(map[string]string)
+	for i, name := range names {
+		if i > 0 && i < len(match) {
+			data[name] = match[i]
+		}
+	}
+	return data, nil
+}
+
+func buildPattern(templateString string, data map[string]string) (string, error) {
+	tmpl, err := template.New("example").Parse(templateString)
+	if err != nil {
+		return "", err
+	}
+	var result bytes.Buffer
+	if err := tmpl.Execute(&result, data); err != nil {
+		return "", err
+	}
+
+	return result.String(), nil
 }
 
 func loadConfig() (*Config, error) {

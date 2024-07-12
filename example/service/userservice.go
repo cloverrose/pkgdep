@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/cloverrose/pkgdep/example/domain/user"
 	"github.com/cloverrose/pkgdep/example/infra"
 )
 
@@ -9,7 +10,8 @@ type UserService struct {
 }
 
 func (s *UserService) UpdateName(ID int, newName string) {
-	user := s.db.GetUser(ID)
-	user.Name = newName
-	s.db.SaveUser(user)
+	var u *user.User
+	u = s.db.GetUser(ID)
+	u.Name = newName
+	s.db.SaveUser(u)
 }

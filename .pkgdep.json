@@ -3,6 +3,7 @@
     "github.com/cloverrose/pkgdep/example"
   ],
   "isExcludeTests": true,
+  "enableRegexp": true,
   "Dependencies": {
     "github.com/cloverrose/pkgdep/example/infra": [
       "github.com/cloverrose/pkgdep/example/domain/*"
@@ -13,6 +14,9 @@
     ],
     "github.com/cloverrose/pkgdep/example/application": [
       "github.com/cloverrose/pkgdep/example/service"
+    ],
+    "github.com/cloverrose/pkgdep/example/foundations/(?P<foundationName>[^/]+)/service": [
+      "github.com/cloverrose/pkgdep/example/foundations/{{.foundationName}}/(domain|infra)"
     ]
   }
 }
