@@ -8,11 +8,15 @@
 $ go install github.com/cloverrose/pkgdep/cmd/pkgdep@latest
 ```
 
-## Or Build from source
+### Or Build from source
 
 ```shell
 $ go build -o bin/ ./cmd/...
 ```
+
+### Or Install via aqua
+
+https://aquaproj.github.io/
 
 ## Usage
 
