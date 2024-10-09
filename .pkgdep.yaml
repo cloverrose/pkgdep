@@ -1,3 +1,5 @@
+---
+# Use the same content with json to make code management easy.
 {
   "targetPackagePrefixList": [
     "github.com/cloverrose/pkgdep/example"

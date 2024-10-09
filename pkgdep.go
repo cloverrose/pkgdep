@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"golang.org/x/tools/go/analysis"
+	"gopkg.in/yaml.v3"
 )
 
 const doc = "pkgdep checks if package dependency follows rule"
@@ -33,10 +34,10 @@ func init() {
 }
 
 type Config struct {
-	TargetPackagePrefixList []string
-	IsExcludeTests          bool
-	EnableRegexp            bool
-	Dependencies            map[string][]string
+	TargetPackagePrefixList []string            `yaml:"targetPackagePrefixList"`
+	IsExcludeTests          bool                `yaml:"isExcludeTests"`
+	EnableRegexp            bool                `yaml:"enableRegexp"`
+	Dependencies            map[string][]string `yaml:"dependencies"`
 }
 
 func (c *Config) isTargetPackage(pkg string) bool {
@@ -133,8 +134,16 @@ func loadConfig() (*Config, error) {
 		return nil, err
 	}
 	cfg := new(Config)
-	if err := json.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("cannot decode JSON config file %s: %v", configFile, err)
+	if strings.HasSuffix(configFile, ".json") {
+		if err := json.Unmarshal(data, cfg); err != nil {
+			return nil, fmt.Errorf("cannot decode JSON config file %s: %v", configFile, err)
+		}
+	} else if strings.HasSuffix(configFile, ".yaml") || strings.HasSuffix(configFile, ".yml") {
+		if err := yaml.Unmarshal(data, cfg); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("unsupported file suffix. supported file suffixes are [json, yaml, yml]")
 	}
 	return cfg, nil
 }
