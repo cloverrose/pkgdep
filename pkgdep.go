@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const doc = "pkgdep checks if package dependency follows rule"
+const doc = "pkgdep validates if package dependency follows rule"
 
 // Analyzer checks if package dependency follows rule.
 var Analyzer = &analysis.Analyzer{
