@@ -9,7 +9,7 @@ type AddressService struct {
 	db *infra.DB
 }
 
-func (s *AddressService) UpdateAddress(ID string, zipCode, prefecture string) {
+func (s *AddressService) UpdateAddress(ID, zipCode, prefecture string) {
 	var a *address.Address
 	a = s.db.GetAddress(ID)
 	a.ZipCode = zipCode

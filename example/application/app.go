@@ -14,6 +14,6 @@ func (s *Server) UpdateName(ID int, name string) {
 	s.userService.UpdateName(ID, name)
 }
 
-func (s *Server) UpdateAddress(ID string, zipCode, prefecture string) {
+func (s *Server) UpdateAddress(ID, zipCode, prefecture string) {
 	s.addressService.UpdateAddress(ID, zipCode, prefecture)
 }

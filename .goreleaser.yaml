@@ -12,7 +12,7 @@ builds:
       - CGO_ENABLED=0
 
 archives:
-  - format: tar.gz
+  - formats: [ 'tar.gz' ]
     wrap_in_directory: true
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
@@ -25,7 +25,7 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [ 'zip' ]
 
 changelog:
   sort: asc
