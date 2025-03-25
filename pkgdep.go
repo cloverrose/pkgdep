@@ -27,6 +27,9 @@ var Analyzer = &analysis.Analyzer{
 	Flags:    *flag.NewFlagSet("pkgdep", flag.ExitOnError),
 }
 
+// configFile is absolute file path to pkgdep config file.
+// Allowed file extension is [.json, .yaml, .yml]
+// e.g. /path/to/.pkgdep.json
 var configFile string
 
 func init() {
