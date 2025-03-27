@@ -27,13 +27,13 @@ var Analyzer = &analysis.Analyzer{
 	Flags:    *flag.NewFlagSet("pkgdep", flag.ExitOnError),
 }
 
-// configFile is absolute file path to pkgdep config file.
+// configFile is file path to pkgdep config file.
 // Allowed file extension is [.json, .yaml, .yml]
-// e.g. /path/to/.pkgdep.json
+// e.g. ./.pkgdep.json
 var configFile string
 
 func init() {
-	Analyzer.Flags.StringVar(&configFile, "config", "", "config json file path. It should be absolute path.")
+	Analyzer.Flags.StringVar(&configFile, "config", "", "config file path.")
 }
 
 type Config struct {

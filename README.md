@@ -37,6 +37,8 @@ See [.pkgdep.json](./.pkgdep.json) as example.
 
 #### A. Use as go vet tool
 
+config file path should be absolute.
+
 ```shell
 $ go vet -vettool=`which pkgdep` -pkgdep.config=$(PWD)/.pkgdep.json ./...
 ```
@@ -61,6 +63,8 @@ plugins:
 
 `.golangci.yml`
 
+config file path can be relative.
+
 ```yaml
 linters-settings:
   custom:
@@ -68,5 +72,5 @@ linters-settings:
       type: "module"
       description: pkgdep validates if package dependency follows rule.
       settings:
-        config: "/path/to/.pkgdep.yaml"
+        config: "./.pkgdep.yaml"
 ```
