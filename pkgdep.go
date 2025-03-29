@@ -13,6 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
+	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
 
 const doc = "pkgdep validates if package dependency follows rule"
@@ -38,10 +39,10 @@ func init() {
 }
 
 type Config struct {
-	TargetPackagePrefixList []string            `yaml:"targetPackagePrefixList"`
-	IsExcludeTests          bool                `yaml:"isExcludeTests"`
-	EnableRegexp            bool                `yaml:"enableRegexp"`
-	Dependencies            map[string][]string `yaml:"dependencies"`
+	TargetPackagePrefixList []string              `yaml:"targetPackagePrefixList"`
+	IsExcludeTests          bool                  `yaml:"isExcludeTests"`
+	EnableRegexp            bool                  `yaml:"enableRegexp"`
+	Dependencies            orderedmap.OrderedMap `yaml:"dependencies"`
 }
 
 func (c *Config) isTargetPackage(pkg string) bool {
@@ -54,7 +55,7 @@ func (c *Config) isTargetPackage(pkg string) bool {
 }
 
 func (c *Config) isAllowedDependency(from, to string) bool {
-	for fromPattern, toTemplateStrings := range c.Dependencies {
+	for fromPattern, toTemplateStrings := range c.Dependencies.Iter() {
 		data, err := matchAndExtract(fromPattern, from)
 		if err != nil {
 			continue

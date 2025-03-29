@@ -32,6 +32,10 @@ See [.pkgdep.yaml](./.pkgdep.yaml) as example.
 
 We can use regexp.
 
+**Detailed Information**
+
+`dependencies` is unmarshalled into an ordered map. Package dependencies are validated in order, starting from the first entry.
+
 ### 2. Run
 
 #### A. Use as go vet tool
