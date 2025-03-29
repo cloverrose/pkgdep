@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -13,6 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
+	"github.com/cloverrose/pkgdep/pkg/log"
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
 
@@ -22,20 +25,48 @@ const doc = "pkgdep validates if package dependency follows rule"
 var Analyzer = &analysis.Analyzer{
 	Name:     "pkgdep",
 	Doc:      doc,
-	Run:      run,
+	Run:      setupAndRun,
 	Requires: []*analysis.Analyzer{},
 	Flags:    *flag.NewFlagSet("pkgdep", flag.ExitOnError),
 }
 
-// configFile is file path to pkgdep config file.
-// Allowed file extension is [.yaml, .yml]
-// e.g. ./.pkgdep.yaml
-var configFile string
+// options
+var (
+	// configFile is file path to pkgdep config file.
+	// Allowed file extension is [.yaml, .yml]
+	// e.g. ./.pkgdep.yaml
+	configFile string
+
+	// log related configuration.
+	logConfig = log.Config{
+		Level:  "INFO",
+		File:   "",
+		Format: "json",
+	}
+)
 
 var regexpCache = cachedregexp.New(true)
 
 func init() {
 	Analyzer.Flags.StringVar(&configFile, "config", "", "config file path.")
+	Analyzer.Flags.StringVar(&logConfig.Level, "log.level", logConfig.Level, "logging level. debug, info, warn, error")
+	Analyzer.Flags.StringVar(&logConfig.File, "log.file", logConfig.File, "log file path.")
+	Analyzer.Flags.StringVar(&logConfig.Format, "log.format", logConfig.Format, "logging format. json or text")
+}
+
+func setupAndRun(pass *analysis.Pass) (any, error) {
+	closer, err := log.SetDefault(logConfig)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := closer(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	slog.Debug("Starting pkgdep analyzer...")
+
+	return run(pass)
 }
 
 type Config struct {

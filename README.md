@@ -2,9 +2,23 @@
 
 `pkgdep` checks if package dependency follows rule.
 
-## Config
+## Options
 
-`pkgdep` requires you to specify a configuration file using the `config` option.
+- `config` (required)
+  - Path to the configuration file (e.g. `.pkgdep.yaml`)
+  - Supported file extensions: `.yaml`, `.yml`
+- `log.level` (optional)
+  - Controls logging verbosity
+  - Valid values: `DEBUG`, `INFO`, `WARN`, `ERROR`
+  - Default: `INFO`
+- `log.file` (optional)
+  - Path to write log output
+  - If unspecified, logs to stdout
+  - Note: When using with golangci-lint, a log file must be specified since stdout is captured
+- `log.format` (optional)
+  - Controls log output format
+  - Valid values: `json`, `text`
+  - Default: `json`
 
 You can configure via commandline option or golangci setting.
 
@@ -60,8 +74,8 @@ name: custom-golangci-lint
 destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
-    import: 'github.com/cloverrose/mockguard'
-    version: v0.4.0
+    import: 'github.com/cloverrose/pkgdep'
+    version: v0.4.3
 ```
 
 `.golangci.yml`
@@ -76,4 +90,8 @@ linters-settings:
       description: pkgdep validates if package dependency follows rule.
       settings:
         config: "./.pkgdep.yaml"
+        log:
+          level: "INFO"
+          file: "./log.txt"
+          format: "json"
 ```

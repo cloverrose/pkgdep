@@ -3,6 +3,8 @@ package pkgdep
 import (
 	"github.com/golangci/plugin-module-register/register"
 	"golang.org/x/tools/go/analysis"
+
+	"github.com/cloverrose/pkgdep/pkg/log"
 )
 
 func init() {
@@ -25,6 +27,7 @@ func newPlugin(conf any) (register.LinterPlugin, error) {
 
 type settings struct {
 	Config string
+	Log    log.Config
 }
 
 type plugin struct {
@@ -34,6 +37,15 @@ type plugin struct {
 func (p *plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	if p.settings.Config != "" {
 		configFile = p.settings.Config
+	}
+	if p.settings.Log.Level != "" {
+		logConfig.Level = p.settings.Log.Level
+	}
+	if p.settings.Log.File != "" {
+		logConfig.File = p.settings.Log.File
+	}
+	if p.settings.Log.Format != "" {
+		logConfig.Format = p.settings.Log.Format
 	}
 	return []*analysis.Analyzer{
 		Analyzer,
