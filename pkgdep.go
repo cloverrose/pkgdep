@@ -15,6 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
+	"github.com/cloverrose/pkgdep/pkg/inspector"
 	"github.com/cloverrose/pkgdep/pkg/log"
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
@@ -43,15 +44,23 @@ var (
 		File:   "",
 		Format: "json",
 	}
+
+	inspectorConfig = inspector.Config{
+		File: "",
+	}
 )
 
-var regexpCache = cachedregexp.New(true)
+var (
+	regexpCache       = cachedregexp.New(true)
+	inspectorInstance *inspector.Inspector
+)
 
 func init() {
 	Analyzer.Flags.StringVar(&configFile, "config", "", "config file path.")
 	Analyzer.Flags.StringVar(&logConfig.Level, "log.level", logConfig.Level, "logging level. debug, info, warn, error")
 	Analyzer.Flags.StringVar(&logConfig.File, "log.file", logConfig.File, "log file path.")
 	Analyzer.Flags.StringVar(&logConfig.Format, "log.format", logConfig.Format, "logging format. json or text")
+	Analyzer.Flags.StringVar(&inspectorConfig.File, "inspector.file", inspectorConfig.File, "inspector file path")
 }
 
 func setupAndRun(pass *analysis.Pass) (any, error) {
@@ -65,6 +74,13 @@ func setupAndRun(pass *analysis.Pass) (any, error) {
 		}
 	}()
 	slog.Debug("Starting pkgdep analyzer...")
+
+	inspectorInstance = inspector.New(inspectorConfig)
+	defer func() {
+		if err := inspectorInstance.Save(); err != nil {
+			slog.Error("fail inspectorInstance.Save", slog.Any("error", err))
+		}
+	}()
 
 	return run(pass)
 }
@@ -101,6 +117,7 @@ func (c *Config) isAllowedDependency(from, to string) bool {
 				continue
 			}
 			if re.MatchString(to) {
+				inspectorInstance.RecordUsage(fromPattern, toTemplateString)
 				return true
 			}
 		}
