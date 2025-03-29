@@ -26,12 +26,11 @@ https://aquaproj.github.io/
 
 ## Usage
 
-### 1. Create .pkgdep.json in your repository
+### 1. Create .pkgdep.yaml in your repository
 
-See [.pkgdep.json](./.pkgdep.json) as example.
+See [.pkgdep.yaml](./.pkgdep.yaml) as example.
 
-- When `enableRegexp = false`: We can use `*` as wild card.
-- When `enableRegexp = true`: We can use regexp.
+We can use regexp.
 
 ### 2. Run
 
@@ -40,7 +39,7 @@ See [.pkgdep.json](./.pkgdep.json) as example.
 config file path should be absolute.
 
 ```shell
-$ go vet -vettool=`which pkgdep` -pkgdep.config=$(PWD)/.pkgdep.json ./...
+$ go vet -vettool=`which pkgdep` -pkgdep.config=$(PWD)/.pkgdep.yaml ./...
 ```
 
 #### B. Use as golangci-lint custom plugin
@@ -58,7 +57,7 @@ destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/mockguard'
-    version: v0.3.5
+    version: v0.4.0
 ```
 
 `.golangci.yml`

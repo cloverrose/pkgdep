@@ -2,10 +2,8 @@ package pkgdep
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -28,8 +26,8 @@ var Analyzer = &analysis.Analyzer{
 }
 
 // configFile is file path to pkgdep config file.
-// Allowed file extension is [.json, .yaml, .yml]
-// e.g. ./.pkgdep.json
+// Allowed file extension is [.yaml, .yml]
+// e.g. ./.pkgdep.yaml
 var configFile string
 
 func init() {
@@ -53,30 +51,6 @@ func (c *Config) isTargetPackage(pkg string) bool {
 }
 
 func (c *Config) isAllowedDependency(from, to string) bool {
-	allows := c.Dependencies[from]
-	for _, allow := range allows {
-		if allow == "*" { // Wild card
-			return true
-		}
-		if strings.HasSuffix(allow, "/*") {
-			newAllow := strings.ReplaceAll(allow, "/*", "/")
-			if strings.HasPrefix(to, newAllow) {
-				return true
-			}
-		}
-		if allow == to {
-			return true
-		}
-	}
-
-	if c.EnableRegexp {
-		return c.isAllowedDependencyRegexp(from, to)
-	}
-
-	return false
-}
-
-func (c *Config) isAllowedDependencyRegexp(from, to string) bool {
 	for fromPattern, toTemplateStrings := range c.Dependencies {
 		data, err := matchAndExtract(fromPattern, from)
 		if err != nil {
@@ -137,17 +111,25 @@ func loadConfig() (*Config, error) {
 		return nil, err
 	}
 	cfg := new(Config)
+
+	// To distinguish the case that config file explicitly set enableRegexp=false,
+	// we set it to true by default.
+	cfg.EnableRegexp = true
+
 	if strings.HasSuffix(configFile, ".json") {
-		if err := json.Unmarshal(data, cfg); err != nil {
-			return nil, fmt.Errorf("cannot decode JSON config file %s: %v", configFile, err)
-		}
+		return nil, errors.New("JSON configuration file is no longer supported. See breaking_changes.md")
 	} else if strings.HasSuffix(configFile, ".yaml") || strings.HasSuffix(configFile, ".yml") {
 		if err := yaml.Unmarshal(data, cfg); err != nil {
 			return nil, err
 		}
 	} else {
-		return nil, fmt.Errorf("unsupported file suffix. supported file suffixes are [json, yaml, yml]")
+		return nil, errors.New("unsupported file suffix. supported file suffixes are [yaml, yml]")
 	}
+
+	if !cfg.EnableRegexp {
+		return nil, errors.New("enableRegexp option is obsolete. See breaking_changes.md")
+	}
+
 	return cfg, nil
 }
 

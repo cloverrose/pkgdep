@@ -1,24 +1,18 @@
 ---
-# Use the same content with json to make code management easy.
-{
-  "targetPackagePrefixList": [
-    "github.com/cloverrose/pkgdep/example"
-  ],
-  "isExcludeTests": true,
-  "enableRegexp": true,
-  "dependencies": {
-    "github.com/cloverrose/pkgdep/example/infra": [
-      "github.com/cloverrose/pkgdep/example/domain/.*$"
-    ],
-    "github.com/cloverrose/pkgdep/example/service": [
-      "github.com/cloverrose/pkgdep/example/domain/.*$",
-      "github.com/cloverrose/pkgdep/example/infra"
-    ],
-    "github.com/cloverrose/pkgdep/example/application": [
-      "github.com/cloverrose/pkgdep/example/service"
-    ],
-    "github.com/cloverrose/pkgdep/example/foundations/(?P<foundationName>[^/]+)/service": [
-      "github.com/cloverrose/pkgdep/example/foundations/{{.foundationName}}/(domain|infra)"
-    ]
-  }
-}
+targetPackagePrefixList:
+  - github.com/cloverrose/pkgdep/example
+isExcludeTests: true
+dependencies:
+  # infra can depend on domain
+  github.com/cloverrose/pkgdep/example/infra:
+    - github.com/cloverrose/pkgdep/example/domain/.*$
+  # service can depend on domain and infra
+  github.com/cloverrose/pkgdep/example/service:
+    - github.com/cloverrose/pkgdep/example/domain/.*$
+    - github.com/cloverrose/pkgdep/example/infra
+  # application can depend on service
+  github.com/cloverrose/pkgdep/example/application:
+    - github.com/cloverrose/pkgdep/example/service
+  # you can use regexp and capture group to match the dependency
+  github.com/cloverrose/pkgdep/example/foundations/(?P<foundationName>[^/]+)/service:
+    - github.com/cloverrose/pkgdep/example/foundations/{{.foundationName}}/(domain|infra)
