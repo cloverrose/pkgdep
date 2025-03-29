@@ -19,6 +19,11 @@
   - Controls log output format
   - Valid values: `json`, `text`
   - Default: `json`
+- `inspector.file` (optional, experimental)
+  - Path to write inspector output
+  - If unspecified, inspector output is not saved
+  - Inspector output contains information about which dependency rules were used
+  - **Warning**: The inspector feature is experimental and may change or be removed in future versions without notice.
 
 You can configure via commandline option or golangci setting.
 
@@ -75,7 +80,7 @@ destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/pkgdep'
-    version: v0.4.3
+    version: v0.5.0
 ```
 
 `.golangci.yml`
@@ -94,4 +99,6 @@ linters-settings:
           level: "INFO"
           file: "./log.txt"
           format: "json"
+        inspector:
+          file: "./used_rules.txt"
 ```

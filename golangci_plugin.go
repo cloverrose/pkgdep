@@ -4,6 +4,7 @@ import (
 	"github.com/golangci/plugin-module-register/register"
 	"golang.org/x/tools/go/analysis"
 
+	"github.com/cloverrose/pkgdep/pkg/inspector"
 	"github.com/cloverrose/pkgdep/pkg/log"
 )
 
@@ -26,8 +27,9 @@ func newPlugin(conf any) (register.LinterPlugin, error) {
 }
 
 type settings struct {
-	Config string
-	Log    log.Config
+	Config    string
+	Log       log.Config
+	Inspector inspector.Config
 }
 
 type plugin struct {
@@ -46,6 +48,9 @@ func (p *plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	}
 	if p.settings.Log.Format != "" {
 		logConfig.Format = p.settings.Log.Format
+	}
+	if p.settings.Inspector.File != "" {
+		inspectorConfig.File = p.settings.Inspector.File
 	}
 	return []*analysis.Analyzer{
 		Analyzer,
