@@ -5,13 +5,14 @@ import (
 	"errors"
 	"flag"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 
 	"golang.org/x/tools/go/analysis"
 	"gopkg.in/yaml.v3"
+
+	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
 )
 
 const doc = "pkgdep validates if package dependency follows rule"
@@ -29,6 +30,8 @@ var Analyzer = &analysis.Analyzer{
 // Allowed file extension is [.yaml, .yml]
 // e.g. ./.pkgdep.yaml
 var configFile string
+
+var regexpCache = cachedregexp.New(true)
 
 func init() {
 	Analyzer.Flags.StringVar(&configFile, "config", "", "config file path.")
@@ -61,7 +64,7 @@ func (c *Config) isAllowedDependency(from, to string) bool {
 			if err != nil {
 				continue
 			}
-			re, err := regexp.Compile(toPattern)
+			re, err := regexpCache.Compile(toPattern)
 			if err != nil {
 				continue
 			}
@@ -74,7 +77,7 @@ func (c *Config) isAllowedDependency(from, to string) bool {
 }
 
 func matchAndExtract(pattern, text string) (map[string]string, error) {
-	re, err := regexp.Compile(pattern)
+	re, err := regexpCache.Compile(pattern)
 	if err != nil {
 		return nil, err
 	}
