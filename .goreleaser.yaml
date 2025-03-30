@@ -5,18 +5,41 @@ before:
     - go mod tidy
 
 builds:
-  - main: ./cmd/pkgdep/
-    id: "pkgdep"
+  - id: "pkgdep"
+    main: ./cmd/pkgdep
     binary: pkgdep
+    env:
+      - CGO_ENABLED=0
+  - id: "pkgdep_tidy"
+    main: ./cmd/tidy
+    binary: pkgdep_tidy
     env:
       - CGO_ENABLED=0
 
 archives:
-  - formats: [ 'tar.gz' ]
+  - id: "pkgdep"
+    ids: [ 'pkgdep' ]
+    formats: [ 'tar.gz' ]
     wrap_in_directory: true
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
-      {{ .ProjectName }}_
+      pkgdep_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [ 'zip' ]
+  - id: "pkgdep_tidy"
+    ids: [ 'pkgdep_tidy' ]
+    formats: [ 'tar.gz' ]
+    wrap_in_directory: true
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      pkgdep_tidy_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386

@@ -36,7 +36,7 @@ $ go install github.com/cloverrose/pkgdep/cmd/pkgdep@latest
 ### Or Build from source
 
 ```shell
-$ make build
+$ make build/pkgdep
 ```
 
 ### Or Install via aqua
@@ -100,5 +100,17 @@ linters-settings:
           file: "./log.txt"
           format: "json"
         inspector:
-          file: "./used_rules.txt"
+          file: "./used_rules.csv"
 ```
+
+# Other documents
+
+## pkgdep_tidy
+
+`pkgdep_tidy` is a command-line tool that helps clean up and optimize your `.pkgdep.yaml` configuration by:
+
+- Removing unused dependency rules
+- Cleaning up empty configuration keys
+- Maintaining clean, consistent formatting
+
+For detailed usage instructions and examples, see the [pkgdep_tidy documentation](cmd/tidy/README.md).

@@ -53,11 +53,17 @@ test:
 .PHONY: build
 build:
 	make build/pkgdep
+	make build/tidy
 
 # build/pkgdep creates the pkgdep binary.
 .PHONY: build/pkgdep
 build/pkgdep:
 	@CGO_ENABLED=0 go build -o bin/pkgdep -v ./cmd/pkgdep
+
+# build/tidy creates the tidy binary.
+.PHONY: build/tidy
+build/tidy:
+	@CGO_ENABLED=0 go build -o bin/tidy -v ./cmd/tidy
 
 # goreleaser/local runs goreleaser locally.
 # see https://goreleaser.com/quick-start/

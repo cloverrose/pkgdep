@@ -82,20 +82,10 @@ func (i *Inspector) Save() error {
 }
 
 // Load creates an Inspector instance from saved records
-func Load(cfg Config) (*Inspector, error) {
-	if cfg.File == "" {
-		return nil, errors.New("file is not specified")
-	}
-
-	file, err := os.Open(cfg.File)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-	defer file.Close()
-
+func Load(r io.Reader) (*Inspector, error) {
 	usedRules := make(map[string][]string)
 
-	reader := csv.NewReader(file)
+	reader := csv.NewReader(r)
 	reader.FieldsPerRecord = 2
 	for {
 		record, err := reader.Read()
@@ -109,7 +99,8 @@ func Load(cfg Config) (*Inspector, error) {
 		usedRules[frm] = append(usedRules[frm], to)
 	}
 
-	inspector := New(cfg)
-	inspector.usedRules = usedRules
-	return inspector, nil
+	return &Inspector{
+		mu:        sync.Mutex{},
+		usedRules: usedRules,
+	}, nil
 }
