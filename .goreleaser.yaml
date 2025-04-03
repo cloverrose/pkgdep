@@ -15,6 +15,11 @@ builds:
     binary: pkgdep_tidy
     env:
       - CGO_ENABLED=0
+  - id: "pkgdep-tidy"
+    main: ./cmd/pkgdep-tidy
+    binary: pkgdep-tidy
+    env:
+      - CGO_ENABLED=0
 
 archives:
   - id: "pkgdep"
@@ -40,6 +45,22 @@ archives:
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
       pkgdep_tidy_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [ 'zip' ]
+  - id: "pkgdep-tidy"
+    ids: [ 'pkgdep-tidy' ]
+    formats: [ 'tar.gz' ]
+    wrap_in_directory: true
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      pkgdep-tidy_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
