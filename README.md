@@ -114,3 +114,13 @@ linters-settings:
 - Maintaining clean, consistent formatting
 
 For detailed usage instructions and examples, see the [pkgdep_tidy documentation](cmd/tidy/README.md).
+
+## pkgdep-tidy
+
+`pkgdep-tidy` is a command-line tool that helps clean up and optimize your `.pkgdep.yaml` configuration by:
+
+- Removing unused dependency rules
+- Cleaning up empty configuration keys
+- Maintaining clean, consistent formatting
+
+For detailed usage instructions and examples, see the [pkgdep-tidy documentation](cmd/pkgdep-tidy/README.md).
