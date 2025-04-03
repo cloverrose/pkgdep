@@ -53,18 +53,12 @@ test:
 .PHONY: build
 build:
 	make build/pkgdep
-	make build/tidy
 	make build/pkgdep-tidy
 
 # build/pkgdep creates the pkgdep binary.
 .PHONY: build/pkgdep
 build/pkgdep:
 	@CGO_ENABLED=0 go build -o bin/pkgdep -v ./cmd/pkgdep
-
-# build/tidy creates the tidy binary.
-.PHONY: build/tidy
-build/tidy:
-	@CGO_ENABLED=0 go build -o bin/tidy -v ./cmd/tidy
 
 # build/pkgdep-tidy creates the pkgdep-tidy binary.
 .PHONY: build/pkgdep-tidy
