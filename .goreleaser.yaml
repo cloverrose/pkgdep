@@ -1,25 +1,24 @@
 version: 2
-
 before:
   hooks:
     - go mod tidy
-
 builds:
-  - id: "pkgdep"
+  - id: pkgdep
     main: ./cmd/pkgdep
     binary: pkgdep
     env:
       - CGO_ENABLED=0
-  - id: "pkgdep-tidy"
+  - id: pkgdep-tidy
     main: ./cmd/pkgdep-tidy
     binary: pkgdep-tidy
     env:
       - CGO_ENABLED=0
-
 archives:
-  - id: "pkgdep"
-    ids: [ 'pkgdep' ]
-    formats: [ 'tar.gz' ]
+  - id: pkgdep
+    ids:
+      - pkgdep
+    formats:
+      - tar.gz
     wrap_in_directory: true
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
@@ -32,10 +31,13 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        formats: [ 'zip' ]
-  - id: "pkgdep-tidy"
-    ids: [ 'pkgdep-tidy' ]
-    formats: [ 'tar.gz' ]
+        formats:
+          - zip
+  - id: pkgdep-tidy
+    ids:
+      - pkgdep-tidy
+    formats:
+      - tar.gz
     wrap_in_directory: true
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
@@ -48,14 +50,13 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        formats: [ 'zip' ]
-
+        formats:
+          - zip
 changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
-
+      - '^docs:'
+      - '^test:'
 announce:
   skip: "true"

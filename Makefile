@@ -9,6 +9,12 @@ PATH := $(GOBIN):$(PATH)
 PATH := $(shell aqua root-dir)/bin:$(PATH)
 SHELL := env "PATH=$(PATH)" bash
 
+# update updates dependencies.
+.PHONY: update
+update:
+	make go/update
+	make aqua/update
+
 # aqua/install installs aqua dependencies.
 .PHONY: aqua/install
 aqua/install:
@@ -18,6 +24,14 @@ aqua/install:
 .PHONY: aqua/update-checksum
 aqua/update-checksum:
 	aqua update-checksum --deep --prune
+
+# aqua/update updates aqua dependencies.
+.PHONY: aqua/update
+aqua/update:
+	aqua update-aqua
+	aqua update
+	aqua update-checksum --deep --prune
+	aqua install
 
 # aqua/reset removes all the aqua dependencies.
 .PHONY: aqua/reset
@@ -41,6 +55,12 @@ fmt:
 # tidy updates the go.mod and go.sum files.
 .PHONY: tidy
 tidy:
+	go mod tidy -v
+
+# tidy updates go dependencies.
+.PHONY: go/update
+go/update:
+	go get -u all
 	go mod tidy -v
 
 # test runs the tests.
