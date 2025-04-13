@@ -50,7 +50,7 @@ fmt:
 	@find . -iname "*.go" -not -path "./vendor/**" | xargs gofmt -s -w
 	gofumpt -w -extra .
 	@# gci's option should match with .golangci.yaml
-	gci write . --skip-generated --skip-vendor --custom-order -s standard -s default -s 'prefix(github.com/gostaticanalysis)' -s 'prefix(github.com/cloverrose)' -s 'prefix(github.com/cloverrose/pkgdep)'
+	gci write . --skip-generated --skip-vendor --custom-order -s standard -s default -s 'prefix(github.com/gostaticanalysis)' -s 'prefix(github.com/cloverrose)' -s 'prefix(github.com/cloverrose/pkgdep/pkg)' -s 'prefix(github.com/cloverrose/pkgdep)'
 
 # tidy updates the go.mod and go.sum files.
 .PHONY: tidy
