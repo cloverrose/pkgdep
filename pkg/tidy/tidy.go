@@ -8,12 +8,15 @@ import (
 	"log/slog"
 	"os"
 	"slices"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/cloverrose/pkgdep/pkg/inspector"
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
+
+const keepAnnotation = "@keep"
 
 var (
 	ErrNotFound    = errors.New("not found")
@@ -160,19 +163,21 @@ func (t *Tidy) removeRules(unusedRules map[string][]string) error {
 	newContent := make([]*yaml.Node, 0, len(depsNode.Content))
 
 	for i := 0; i < len(depsNode.Content); i += 2 {
-		from := depsNode.Content[i].Value
+		fromNode := depsNode.Content[i]
+		from := fromNode.Value
 		toList, exists := unusedRules[from]
-		if !exists {
-			// Used rule. Keep it.
+		if !exists || hasKeepAnnotation(fromNode) {
+			// Used rule or annotated with @keep. Keep it.
 			newContent = append(newContent, depsNode.Content[i], depsNode.Content[i+1])
 			continue
 		}
 
 		values := depsNode.Content[i+1].Content
 		newValues := make([]*yaml.Node, 0, len(values))
-		for _, node := range values {
-			if !slices.Contains(toList, node.Value) {
-				newValues = append(newValues, node)
+		for _, toNode := range values {
+			if !slices.Contains(toList, toNode.Value) || hasKeepAnnotation(toNode) {
+				// Used rule or annotated with @keep. Keep it.
+				newValues = append(newValues, toNode)
 			}
 		}
 
@@ -208,4 +213,8 @@ func (t *Tidy) save(w io.Writer) error {
 	encoder := yaml.NewEncoder(w)
 	encoder.SetIndent(2)
 	return encoder.Encode(t.root)
+}
+
+func hasKeepAnnotation(node *yaml.Node) bool {
+	return strings.Contains(node.LineComment, keepAnnotation) || strings.Contains(node.HeadComment, keepAnnotation)
 }
