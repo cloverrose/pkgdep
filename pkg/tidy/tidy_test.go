@@ -115,6 +115,39 @@ dependencies:
     - a/c/d
 `,
 		},
+		{
+			name: "keep annotated rule",
+			configInput: `targetPackagePrefixList:
+  - a
+dependencies:
+  a/b:
+    # @keep head comment on to
+    - a/b/c
+    - a/b/d # @keep line comment on to
+    - a/b/e
+  # @keep head comment on from
+  a/c:
+    - a/c/d
+  a/d: # @keep line comment on from
+    - a/d/e
+  a/e:
+    - a/e/f
+`,
+			inspectInput: ``,
+			want: `targetPackagePrefixList:
+  - a
+dependencies:
+  a/b:
+    # @keep head comment on to
+    - a/b/c
+    - a/b/d # @keep line comment on to
+  # @keep head comment on from
+  a/c:
+    - a/c/d
+  a/d: # @keep line comment on from
+    - a/d/e
+`,
+		},
 	}
 
 	for _, tt := range tests {
