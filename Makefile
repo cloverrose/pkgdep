@@ -14,6 +14,7 @@ SHELL := env "PATH=$(PATH)" bash
 update:
 	make go/update
 	make aqua/update
+	make workflow/update
 
 # aqua/install installs aqua dependencies.
 .PHONY: aqua/install
@@ -90,3 +91,7 @@ build/pkgdep-tidy:
 .PHONY: goreleaser/local
 goreleaser/local:
 	goreleaser release --snapshot --clean
+
+# workflow/update updates github workflow
+.PHONY: workflow/update
+	pinact run
