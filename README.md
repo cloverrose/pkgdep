@@ -74,13 +74,13 @@ Here are reference settings
 `.custom-gcl.yml`
 
 ```yaml
-version: v1.64.8
+version: v2.3.1
 name: custom-golangci-lint
 destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/pkgdep'
-    version: v0.6.4
+    version: v0.7.2
 ```
 
 `.golangci.yml`
