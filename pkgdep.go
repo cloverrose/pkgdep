@@ -1,7 +1,6 @@
 package pkgdep
 
 import (
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,12 +8,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"golang.org/x/tools/go/analysis"
 	"gopkg.in/yaml.v3"
 
-	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
+	"github.com/cloverrose/pkgdep/pkg/checker"
 	"github.com/cloverrose/pkgdep/pkg/inspector"
 	"github.com/cloverrose/pkgdep/pkg/log"
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
@@ -50,10 +48,7 @@ var (
 	}
 )
 
-var (
-	regexpCache       = cachedregexp.New(true)
-	inspectorInstance *inspector.Inspector
-)
+var inspectorInstance *inspector.Inspector
 
 func init() {
 	Analyzer.Flags.StringVar(&configFile, "config", "", "config file path.")
@@ -101,62 +96,6 @@ func (c *Config) isTargetPackage(pkg string) bool {
 	return false
 }
 
-func (c *Config) isAllowedDependency(from, to string) bool {
-	for fromPattern, toTemplateStrings := range c.Dependencies.Iter() {
-		data, err := matchAndExtract(fromPattern, from)
-		if err != nil {
-			continue
-		}
-		for _, toTemplateString := range toTemplateStrings {
-			toPattern, err := buildPattern(toTemplateString, data)
-			if err != nil {
-				continue
-			}
-			re, err := regexpCache.Compile(toPattern)
-			if err != nil {
-				continue
-			}
-			if re.MatchString(to) {
-				inspectorInstance.RecordUsage(fromPattern, toTemplateString)
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func matchAndExtract(pattern, text string) (map[string]string, error) {
-	re, err := regexpCache.Compile(pattern)
-	if err != nil {
-		return nil, err
-	}
-	match := re.FindStringSubmatch(text)
-	if match == nil {
-		return nil, errors.New("no match")
-	}
-	names := re.SubexpNames()
-	data := make(map[string]string)
-	for i, name := range names {
-		if i > 0 && i < len(match) {
-			data[name] = match[i]
-		}
-	}
-	return data, nil
-}
-
-func buildPattern(templateString string, data map[string]string) (string, error) {
-	tmpl, err := template.New("example").Parse(templateString)
-	if err != nil {
-		return "", err
-	}
-	var result bytes.Buffer
-	if err := tmpl.Execute(&result, data); err != nil {
-		return "", err
-	}
-
-	return result.String(), nil
-}
-
 func loadConfig() (*Config, error) {
 	data, err := os.ReadFile(configFile)
 	if err != nil {
@@ -194,6 +133,8 @@ func run(pass *analysis.Pass) (any, error) {
 		return nil, err
 	}
 
+	checkerInstance := checker.New(cfg.Dependencies, inspectorInstance)
+
 	fromPackage := pass.Pkg.Path()
 	if !cfg.isTargetPackage(fromPackage) {
 		return nil, nil
@@ -214,7 +155,7 @@ func run(pass *analysis.Pass) (any, error) {
 			if !cfg.isTargetPackage(toPackage) {
 				continue
 			}
-			if !cfg.isAllowedDependency(fromPackage, toPackage) {
+			if !checkerInstance.IsAllowedDependency(fromPackage, toPackage) {
 				pass.Reportf(ip.Pos(), "Dependency from %s to %s is not allowed", fromPackage, toPackage)
 			}
 		}
