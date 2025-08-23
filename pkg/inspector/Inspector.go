@@ -35,11 +35,14 @@ func New(cfg Config) *Inspector {
 }
 
 // RecordUsage records a dependency rule usage from -> to
+// If from -> to is already recorded, do nothing.
 func (i *Inspector) RecordUsage(frm, to string) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 
-	i.usedRules[frm] = append(i.usedRules[frm], to)
+	if !slices.Contains(i.usedRules[frm], to) {
+		i.usedRules[frm] = append(i.usedRules[frm], to)
+	}
 }
 
 // IsRecorded checks if a dependency rule usage is recorded
