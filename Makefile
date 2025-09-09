@@ -45,6 +45,11 @@ lint:
 	@golangci-lint version
 	@golangci-lint run $(args) --config=./.golangci.yaml ./...
 
+# gen runs the go code generation
+.PHONY: gen
+gen:
+	go generate ./...
+
 # fmt formats the files.
 .PHONY: fmt
 fmt:

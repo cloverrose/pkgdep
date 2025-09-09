@@ -79,3 +79,16 @@ func (om *OrderedMap) set(key string, value []string) {
 	}
 	om.values[key] = value
 }
+
+// Set adds a key and value to the OrderedMap.
+func (om *OrderedMap) Set(key string, value []string) {
+	// If the key does not exist, add it.
+	if _, exists := om.values[key]; !exists {
+		om.keys = append(om.keys, key)
+	}
+
+	// Set method is for external package. copy for safety.
+	copyValue := make([]string, len(value))
+	copy(copyValue, value)
+	om.values[key] = copyValue
+}

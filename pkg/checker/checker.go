@@ -6,20 +6,19 @@ import (
 	"text/template"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
-	"github.com/cloverrose/pkgdep/pkg/inspector"
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
 
 type Checker struct {
 	dependencies orderedmap.OrderedMap
-	inspector    *inspector.Inspector
+	recorder     recorder
 	regexpCache  *cachedregexp.CachedRegexp
 }
 
-func New(dependencies orderedmap.OrderedMap, inspector *inspector.Inspector) *Checker {
+func New(dependencies orderedmap.OrderedMap, recorder recorder) *Checker {
 	return &Checker{
 		dependencies: dependencies,
-		inspector:    inspector,
+		recorder:     recorder,
 		regexpCache:  cachedregexp.New(true),
 	}
 }
@@ -40,7 +39,7 @@ func (c *Checker) IsAllowedDependency(from, to string) bool {
 				continue
 			}
 			if re.MatchString(to) {
-				c.inspector.RecordUsage(fromPattern, toTemplateString)
+				c.recorder.RecordUsage(fromPattern, toTemplateString)
 				return true
 			}
 		}
