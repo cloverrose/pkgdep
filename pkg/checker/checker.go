@@ -3,6 +3,7 @@ package checker
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"text/template"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
@@ -78,5 +79,14 @@ func buildPattern(templateString string, data map[string]string) (string, error)
 		return "", err
 	}
 
-	return result.String(), nil
+	ret := result.String()
+	if strings.Contains(ret, "<no value>") {
+		// text/template missingkey=error option does not affect "index" https://github.com/golang/go/issues/60008
+		// ret is used to match with go package and go package does not contain `<` and `>`.
+		// We can ignore the possibility that user defines template with `<no value>`.
+		// Returning error manually to align non index case.
+		return "", errors.New("missing key")
+	}
+
+	return ret, nil
 }
