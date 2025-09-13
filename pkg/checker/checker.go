@@ -59,7 +59,7 @@ func (c *Checker) matchAndExtract(pattern, text string) (map[string]string, erro
 	names := re.SubexpNames()
 	data := make(map[string]string)
 	for i, name := range names {
-		if i > 0 && i < len(match) {
+		if name != "" {
 			data[name] = match[i]
 		}
 	}
@@ -67,7 +67,9 @@ func (c *Checker) matchAndExtract(pattern, text string) (map[string]string, erro
 }
 
 func buildPattern(templateString string, data map[string]string) (string, error) {
-	tmpl, err := template.New("example").Parse(templateString)
+	// By using missingkey=error, if templateString refers a key that is not present in the data.
+	// https://pkg.go.dev/text/template#Template.Option
+	tmpl, err := template.New("example").Option("missingkey=error").Parse(templateString)
 	if err != nil {
 		return "", err
 	}
