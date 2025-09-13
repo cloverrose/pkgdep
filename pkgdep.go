@@ -133,7 +133,7 @@ func run(pass *analysis.Pass) (any, error) {
 		return nil, err
 	}
 
-	checkerInstance := checker.New(cfg.Dependencies, inspectorInstance)
+	checkerInstance := checker.New(cfg.Dependencies, nil, inspectorInstance)
 
 	fromPackage := pass.Pkg.Path()
 	if !cfg.isTargetPackage(fromPackage) {

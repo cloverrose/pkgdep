@@ -148,7 +148,7 @@ func TestChecker_IsAllowedDependency(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			checker := New(tt.dependencies(), tt.recorder(ctrl))
+			checker := New(tt.dependencies(), nil, tt.recorder(ctrl))
 			got := checker.IsAllowedDependency(tt.from, tt.to)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("IsAllowedDependency() = (-want +got):\n%s", diff)
