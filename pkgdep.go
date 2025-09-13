@@ -85,6 +85,7 @@ type Config struct {
 	IsExcludeTests          bool                  `yaml:"isExcludeTests"`
 	EnableRegexp            bool                  `yaml:"enableRegexp"`
 	Dependencies            orderedmap.OrderedMap `yaml:"dependencies"`
+	GlobalData              map[string]any        `yaml:"globalData"`
 }
 
 func (c *Config) isTargetPackage(pkg string) bool {
@@ -133,7 +134,7 @@ func run(pass *analysis.Pass) (any, error) {
 		return nil, err
 	}
 
-	checkerInstance := checker.New(cfg.Dependencies, nil, inspectorInstance)
+	checkerInstance := checker.New(cfg.Dependencies, cfg.GlobalData, inspectorInstance)
 
 	fromPackage := pass.Pkg.Path()
 	if !cfg.isTargetPackage(fromPackage) {

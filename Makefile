@@ -75,6 +75,11 @@ test:
 	# @go test $(args) -race -cover ./...
 	@go test $(args) ./...
 
+.PHONY: e2e-test
+e2e-test: build
+e2e-test:
+	go vet -vettool=$(PWD)/bin/pkgdep -pkgdep.config=$(PWD)/.pkgdep.yaml ./...
+
 # build creates the binaries.
 .PHONY: build
 build:
