@@ -130,6 +130,20 @@ func TestChecker_IsAllowedDependency(t *testing.T) {
 			to:   "aa/bb/cc",
 			want: false,
 		},
+		{
+			name: "pattern match handle missing key",
+			dependencies: func() orderedmap.OrderedMap {
+				om := orderedmap.New()
+				om.Set(`^(?P<ax>a+)$`, []string{`^{{ .badkey }}$`})
+				return *om
+			},
+			recorder: func(ctrl *gomock.Controller) recorder {
+				return NewMockrecorder(ctrl)
+			},
+			from: "aaa",
+			to:   "foo",
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
