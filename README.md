@@ -55,6 +55,32 @@ We can use regexp.
 
 `dependencies` is unmarshalled into an ordered map. Package dependencies are validated in order, starting from the first entry.
 
+**globalData**
+
+pkgdep v0.8.0+ supports `globalData` field in `.pkgdep.yaml`.
+This is helpful when your `.pkgdep.yam` becomes complex and has repetetive patterns.
+
+For example, `application` layer can depend on `domain` and `infra` layer, and `domain` layer can depend on `infra` layer. We can define this relationship without `globalData`.
+
+```yaml
+dependencies:
+  .+/modules/(?P<moduleName>[^/]+)/layers/application$:
+    - .+/modules/{{ .moduleName }}/layers/(domain|infra)
+  .+/modules/(?P<moduleName>[^/]+)/layers/domain$:
+    - .+/modules/{{ .moduleName }}/layers/(infra)
+```
+
+With `globalData` we can define like this.
+
+```yaml
+globalData:
+  application: (domain|infra)
+  domain: (infra)
+dependencies:
+  .+/modules/(?P<moduleName>[^/]+)/layers/(?P<layerName>[^/]+)$:
+    - .+/modules/{{ .moduleName }}/layers/{{ index .globalData  .layerName }}
+```
+
 ### 2. Run
 
 #### A. Use as go vet tool
@@ -80,7 +106,7 @@ destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/pkgdep'
-    version: v0.7.2
+    version: v0.8.0
 ```
 
 `.golangci.yml`

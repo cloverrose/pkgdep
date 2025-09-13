@@ -3,6 +3,7 @@ package checker
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"text/template"
 
 	"github.com/cloverrose/pkgdep/pkg/cachedregexp"
@@ -11,13 +12,15 @@ import (
 
 type Checker struct {
 	dependencies orderedmap.OrderedMap
+	globalData   map[string]any
 	recorder     recorder
 	regexpCache  *cachedregexp.CachedRegexp
 }
 
-func New(dependencies orderedmap.OrderedMap, recorder recorder) *Checker {
+func New(dependencies orderedmap.OrderedMap, globalData map[string]any, recorder recorder) *Checker {
 	return &Checker{
 		dependencies: dependencies,
+		globalData:   globalData,
 		recorder:     recorder,
 		regexpCache:  cachedregexp.New(true),
 	}
@@ -29,8 +32,9 @@ func (c *Checker) IsAllowedDependency(from, to string) bool {
 		if err != nil {
 			continue
 		}
+		mergedData := mergeGlobalData(data, c.globalData)
 		for _, toTemplateString := range toTemplateStrings {
-			toPattern, err := buildPattern(toTemplateString, data)
+			toPattern, err := buildPattern(toTemplateString, mergedData)
 			if err != nil {
 				continue
 			}
@@ -66,7 +70,7 @@ func (c *Checker) matchAndExtract(pattern, text string) (map[string]string, erro
 	return data, nil
 }
 
-func buildPattern(templateString string, data map[string]string) (string, error) {
+func buildPattern(templateString string, data map[string]any) (string, error) {
 	// By using missingkey=error, if templateString refers a key that is not present in the data.
 	// https://pkg.go.dev/text/template#Template.Option
 	tmpl, err := template.New("example").Option("missingkey=error").Parse(templateString)
@@ -78,5 +82,24 @@ func buildPattern(templateString string, data map[string]string) (string, error)
 		return "", err
 	}
 
-	return result.String(), nil
+	ret := result.String()
+	if strings.Contains(ret, "<no value>") {
+		// text/template missingkey=error option does not affect "index" https://github.com/golang/go/issues/60008
+		// ret is used to match with go package and go package does not contain `<` and `>`.
+		// We can ignore the possibility that user defines template with `<no value>`.
+		// Returning error manually to align non index case.
+		return "", errors.New("missing key")
+	}
+
+	return ret, nil
+}
+
+func mergeGlobalData(data map[string]string, globalData map[string]any) map[string]any {
+	merged := make(map[string]any, len(data)+1)
+	for k, v := range data {
+		merged[k] = v
+	}
+
+	merged["globalData"] = globalData
+	return merged
 }
