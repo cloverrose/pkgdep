@@ -59,7 +59,7 @@ func (c *Checker) matchAndExtract(pattern, text string) (map[string]string, erro
 	names := re.SubexpNames()
 	data := make(map[string]string)
 	for i, name := range names {
-		if i > 0 && i < len(match) {
+		if name != "" {
 			data[name] = match[i]
 		}
 	}
