@@ -30,11 +30,50 @@ func TestChecker_IsAllowedDependency(t *testing.T) {
 			om.Set(`^(?P<ax>a+)(?P<bx>b+)(?P<cx>c+)$`, []string{`^{{ .ax }}/{{ .bx }}/{{ .cx }}$`})
 			return *om
 		}
+
+		globalDataDep = func() orderedmap.OrderedMap {
+			om := orderedmap.New()
+			om.Set(`^(?P<moduleName>(a|b|c))$`, []string{
+				`^{{ index .globalData .moduleName }}$`,
+				`^{{ index .globalData "module" .moduleName }}$`,
+			})
+			return *om
+		}
+
+		complexGlobalDataDep = func() orderedmap.OrderedMap {
+			om := orderedmap.New()
+			om.Set(`^(?P<moduleName>[^/]+)/(?P<layerName>[^/]+)$`, []string{
+				`^{{ .moduleName }}/{{ index .globalData .moduleName .layerName }}$`,
+			})
+			return *om
+		}
+
+		complexGlobalData = func() map[string]any {
+			return map[string]any{
+				// imagine module a and b have application, domain, infra layer.
+				"a": map[string]any{
+					"infra":       "(infra)",
+					"domain":      "(domain|infra)",
+					"application": "(application|domain|infra)",
+				},
+				"b": map[string]any{
+					"infra":       "(infra)",
+					"domain":      "(domain|infra)",
+					"application": "(application|domain|infra)",
+				},
+				// and module c has only application and infra layer.
+				"c": map[string]any{
+					"infra":       "(infra)",
+					"application": "(application|infra)",
+				},
+			}
+		}
 	)
 
 	tests := []struct {
 		name         string
 		dependencies func() orderedmap.OrderedMap
+		globalData   map[string]any
 		recorder     func(ctrl *gomock.Controller) recorder
 		from         string
 		to           string
@@ -144,11 +183,95 @@ func TestChecker_IsAllowedDependency(t *testing.T) {
 			to:   "foo",
 			want: false,
 		},
+		{
+			name:         "globalData match",
+			dependencies: globalDataDep,
+			globalData: map[string]any{
+				"a": "(a|b|c)",
+				"b": "(b|c)",
+				"c": "(c)",
+			},
+			recorder: func(ctrl *gomock.Controller) recorder {
+				m := NewMockrecorder(ctrl)
+				m.EXPECT().RecordUsage(`^(?P<moduleName>(a|b|c))$`, `^{{ index .globalData .moduleName }}$`)
+				return m
+			},
+			from: "a",
+			to:   "b",
+			want: true,
+		},
+		{
+			name:         "globalData nested static key match",
+			dependencies: globalDataDep,
+			globalData: map[string]any{
+				"module": map[string]any{
+					"a": "(a|b|c)",
+					"b": "(b|c)",
+					"c": "(c)",
+				},
+			},
+			recorder: func(ctrl *gomock.Controller) recorder {
+				m := NewMockrecorder(ctrl)
+				m.EXPECT().RecordUsage(`^(?P<moduleName>(a|b|c))$`, `^{{ index .globalData "module" .moduleName }}$`)
+				return m
+			},
+			from: "b",
+			to:   "c",
+			want: true,
+		},
+		{
+			name:         "complex globalData inside module a (match)",
+			dependencies: complexGlobalDataDep,
+			globalData:   complexGlobalData(),
+			recorder: func(ctrl *gomock.Controller) recorder {
+				m := NewMockrecorder(ctrl)
+				m.EXPECT().RecordUsage(gomock.Any(), gomock.Any())
+				return m
+			},
+			from: "a/domain",
+			to:   "a/infra",
+			want: true,
+		},
+		{
+			name:         "complex globalData cross module (unmatch)",
+			dependencies: complexGlobalDataDep,
+			globalData:   complexGlobalData(),
+			recorder: func(ctrl *gomock.Controller) recorder {
+				return NewMockrecorder(ctrl)
+			},
+			from: "a/application",
+			to:   "b/domain",
+			want: false,
+		},
+		{
+			name:         "complex globalData inside module c (match)",
+			dependencies: complexGlobalDataDep,
+			globalData:   complexGlobalData(),
+			recorder: func(ctrl *gomock.Controller) recorder {
+				m := NewMockrecorder(ctrl)
+				m.EXPECT().RecordUsage(gomock.Any(), gomock.Any())
+				return m
+			},
+			from: "c/application",
+			to:   "c/infra",
+			want: true,
+		},
+		{
+			name:         "complex globalData referring invalid layer (unmatch)",
+			dependencies: complexGlobalDataDep,
+			globalData:   complexGlobalData(),
+			recorder: func(ctrl *gomock.Controller) recorder {
+				return NewMockrecorder(ctrl)
+			},
+			from: "c/application",
+			to:   "c/domain", // module c does not have domain layer
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			checker := New(tt.dependencies(), nil, tt.recorder(ctrl))
+			checker := New(tt.dependencies(), tt.globalData, tt.recorder(ctrl))
 			got := checker.IsAllowedDependency(tt.from, tt.to)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("IsAllowedDependency() = (-want +got):\n%s", diff)
