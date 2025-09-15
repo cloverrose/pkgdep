@@ -6,10 +6,11 @@ checksum:
   require_checksum: true
 registries:
   - type: standard
-    ref: v4.409.0
+    ref: v4.411.1
 packages:
   - name: golangci/golangci-lint@v2.4.0
   - name: mvdan/gofumpt@v0.9.1
   - name: daixiang0/gci@v0.13.7
   - name: suzuki-shunsuke/pinact@v3.4.2
   - name: uber-go/mock@v0.6.0
+  - name: goreleaser/goreleaser@v2.12.0
