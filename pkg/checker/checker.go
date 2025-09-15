@@ -3,6 +3,7 @@ package checker
 import (
 	"bytes"
 	"errors"
+	"log/slog"
 	"strings"
 	"text/template"
 
@@ -95,11 +96,21 @@ func buildPattern(templateString string, data map[string]any) (string, error) {
 }
 
 func mergeGlobalData(data map[string]string, globalData map[string]any) map[string]any {
+	const globalDataFieldName = "globalData"
 	merged := make(map[string]any, len(data)+1)
+
+	if len(globalData) > 0 {
+		if _, exists := data[globalDataFieldName]; exists {
+			slog.Warn("pattern name conflicts with globalData field")
+		} else {
+			// The pattern name takes priority over globalData field.
+			merged[globalDataFieldName] = globalData
+		}
+	}
+
 	for k, v := range data {
 		merged[k] = v
 	}
 
-	merged["globalData"] = globalData
 	return merged
 }
