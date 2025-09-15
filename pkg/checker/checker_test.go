@@ -9,7 +9,7 @@ import (
 	"github.com/cloverrose/pkgdep/pkg/orderedmap"
 )
 
-func TestChecker_IsAllowedDependency(t *testing.T) {
+func TestChecker_CheckDependency(t *testing.T) {
 	var (
 		simpleDep = func() orderedmap.OrderedMap {
 			om := orderedmap.New()
@@ -272,9 +272,9 @@ func TestChecker_IsAllowedDependency(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			checker := New(tt.dependencies(), tt.globalData, tt.recorder(ctrl))
-			got := checker.IsAllowedDependency(tt.from, tt.to)
+			got := checker.CheckDependency(tt.from, tt.to)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Errorf("IsAllowedDependency() = (-want +got):\n%s", diff)
+				t.Errorf("CheckDependency() = (-want +got):\n%s", diff)
 			}
 		})
 	}

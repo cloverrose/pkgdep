@@ -81,6 +81,24 @@ dependencies:
     - .+/modules/{{ .moduleName }}/layers/{{ index .globalData  .layerName }}
 ```
 
+**block list mode**
+
+pkgdep v0.9.0+ supports `mode` field in `.pkgdep.yaml`.
+
+Available modes are `allow_list` and `block_list`. Default mode is `allow_list`.
+
+See [.pkgdep_blocklist.yaml](.pkgdep_blocklist.yaml) as example.
+
+This is helpful in case
+1) you want to introduce pkgdep but describing all allowed dependencies is difficult.
+2) your `.pkgdep.yaml` becomes complex.
+
+
+For case 1, you can block specific dependencies that you really want to avoid.
+
+For case 2, you can have both `.pkgdep.yaml` (for allow list) and `.pkgdep_blocklist.yaml`.
+While `.pkgdep.yaml` unintentionally allows some dependencies that you really want to avoid, you can detect that with `.pkgdep_blocklist.yaml`.
+
 ### 2. Run
 
 #### A. Use as go vet tool
@@ -106,7 +124,7 @@ destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/pkgdep'
-    version: v0.8.0
+    version: v0.9.0
 ```
 
 `.golangci.yml`
