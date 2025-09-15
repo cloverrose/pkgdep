@@ -26,7 +26,7 @@ func New(dependencies orderedmap.OrderedMap, globalData map[string]any, recorder
 	}
 }
 
-func (c *Checker) IsAllowedDependency(from, to string) bool {
+func (c *Checker) CheckDependency(from, to string) bool {
 	for fromPattern, toTemplateStrings := range c.dependencies.Iter() {
 		data, err := c.matchAndExtract(fromPattern, from)
 		if err != nil {

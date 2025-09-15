@@ -80,12 +80,18 @@ func setupAndRun(pass *analysis.Pass) (any, error) {
 	return run(pass)
 }
 
+const (
+	modeAllowList = "allow_list"
+	modeBlockList = "block_list"
+)
+
 type Config struct {
 	TargetPackagePrefixList []string              `yaml:"targetPackagePrefixList"`
 	IsExcludeTests          bool                  `yaml:"isExcludeTests"`
 	EnableRegexp            bool                  `yaml:"enableRegexp"`
 	Dependencies            orderedmap.OrderedMap `yaml:"dependencies"`
 	GlobalData              map[string]any        `yaml:"globalData"`
+	Mode                    string                `yaml:"mode"` // allow_list / block_list (default is allow_list)
 }
 
 func (c *Config) isTargetPackage(pkg string) bool {
@@ -122,6 +128,11 @@ func loadConfig() (*Config, error) {
 		return nil, errors.New("enableRegexp option is obsolete. See breaking_changes.md")
 	}
 
+	if cfg.Mode != modeAllowList && cfg.Mode != modeBlockList {
+		// Set default mode.
+		cfg.Mode = modeAllowList
+	}
+
 	return cfg, nil
 }
 
@@ -156,8 +167,17 @@ func run(pass *analysis.Pass) (any, error) {
 			if !cfg.isTargetPackage(toPackage) {
 				continue
 			}
-			if !checkerInstance.IsAllowedDependency(fromPackage, toPackage) {
-				pass.Reportf(ip.Pos(), "Dependency from %s to %s is not allowed", fromPackage, toPackage)
+
+			matched := checkerInstance.CheckDependency(fromPackage, toPackage)
+			switch cfg.Mode {
+			case modeBlockList:
+				if matched {
+					pass.Reportf(ip.Pos(), "Dependency from %s to %s is blocked", fromPackage, toPackage)
+				}
+			default: // modeAllowList
+				if !matched {
+					pass.Reportf(ip.Pos(), "Dependency from %s to %s is not allowed", fromPackage, toPackage)
+				}
 			}
 		}
 	}

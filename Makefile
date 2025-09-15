@@ -79,6 +79,7 @@ test:
 e2e-test: build
 e2e-test:
 	go vet -vettool=$(PWD)/bin/pkgdep -pkgdep.config=$(PWD)/.pkgdep.yaml ./...
+	go vet -vettool=$(PWD)/bin/pkgdep -pkgdep.config=$(PWD)/.pkgdep_blocklist.yaml ./...
 
 # build creates the binaries.
 .PHONY: build

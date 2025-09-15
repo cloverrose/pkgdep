@@ -1,0 +1,9 @@
+---
+mode: block_list
+targetPackagePrefixList:
+  - github.com/cloverrose/pkgdep/example
+isExcludeTests: true
+dependencies:
+  # domain should not depend on application
+  github.com/cloverrose/pkgdep/example/domain:
+    - github.com/cloverrose/pkgdep/example/application/.*$
