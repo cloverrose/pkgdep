@@ -81,6 +81,8 @@ dependencies:
     - .+/modules/{{ .moduleName }}/layers/{{ index .globalData  .layerName }}
 ```
 
+When regexp pattern name is `globalData` (e.g. `(?P<globalData>foo)`), pattern name takes priority over globalData field.
+
 **block list mode**
 
 pkgdep v0.9.0+ supports `mode` field in `.pkgdep.yaml`.
@@ -124,7 +126,7 @@ destination: bin
 plugins:
   - module: 'github.com/cloverrose/pkgdep'
     import: 'github.com/cloverrose/pkgdep'
-    version: v0.9.0
+    version: v0.9.1
 ```
 
 `.golangci.yml`

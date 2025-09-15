@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -267,9 +268,30 @@ func TestChecker_CheckDependency(t *testing.T) {
 			to:   "c/domain", // module c does not have domain layer
 			want: false,
 		},
+		{
+			name: "globalData key conflicts",
+			dependencies: func() orderedmap.OrderedMap {
+				om := orderedmap.New()
+				// globalData is used for pattern name.
+				om.Set(`^(?P<globalData>a+)$`, []string{`^{{ index .globalData "hello" }}$`})
+				return *om
+			},
+			globalData: map[string]any{
+				"hello": "world",
+			},
+			recorder: func(ctrl *gomock.Controller) recorder {
+				return NewMockrecorder(ctrl)
+			},
+			from: "aaa",
+			to:   "world",
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Discard noisy log
+			slog.SetDefault(slog.New(slog.DiscardHandler))
+
 			ctrl := gomock.NewController(t)
 			checker := New(tt.dependencies(), tt.globalData, tt.recorder(ctrl))
 			got := checker.CheckDependency(tt.from, tt.to)
