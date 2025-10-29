@@ -1,6 +1,6 @@
 module github.com/cloverrose/pkgdep
 
-go 1.24.6
+go 1.25.3
 
 require (
 	github.com/golangci/plugin-module-register v0.1.2
